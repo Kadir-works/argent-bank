@@ -1,66 +1,80 @@
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { loginSuccess } from '../store/authSlice'
-import { login } from '../services/authService'
-import { useNavigate } from 'react-router-dom'
-
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../store/authSlice";
+import { login } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError(null)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
 
-  try {
-    const data = await login(email, password)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
 
-    dispatch(
-      loginSuccess(data.body.token)
-    )
+    try {
+      const data = await login(email, password);
 
-    navigate('/profile') 
-  } catch (err) {
-    setError('Invalid credentials')
-  }
-}
+      dispatch(
+        loginSuccess({
+          token: data.body.token,
+          user: null,
+        })
+      );
 
+      navigate("/profile");
+    } catch {
+      setError("Invalid credentials");
+    }
+  };
 
   return (
-    <div>
-      <h2>Sign In</h2>
+    <main className="main bg-dark">
+      <section className="sign-in-content">
+        <i className="fa fa-user-circle sign-in-icon"></i>
+        <h1>Sign In</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="input-wrapper">
+            <label htmlFor="email">Username</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+          <div className="input-wrapper">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit">Sign In</button>
-      </form>
+          <div className="input-remember">
+            <input type="checkbox" id="remember-me" />
+            <label htmlFor="remember-me">Remember me</label>
+          </div>
 
-      {error && <p>{error}</p>}
-    </div>
-  )
+          <button className="sign-in-button" type="submit">
+            Sign In
+          </button>
+
+          {error && <p className="error">{error}</p>}
+        </form>
+      </section>
+    </main>
+  );
 }
 
-export default SignIn
+export default SignIn;

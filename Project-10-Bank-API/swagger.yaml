@@ -1,9 +1,9 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: Bank Argent API documentation
   description: Contains all available API endpoints in this codebase
-  version: '1.0.0'
-  termsOfService: 'http://swagger.io/terms/'
+  version: "1.0.0"
+  termsOfService: "http://swagger.io/terms/"
 host: localhost:3001
 basePath: /api/v1
 schemes:
@@ -21,17 +21,17 @@ paths:
           description: Login Payload
           required: true
           schema:
-            $ref: '#/definitions/Login'
+            $ref: "#/definitions/Login"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Login Successfully
           schema:
-            $ref: '#/definitions/LoginResponse'
-        '400':
+            $ref: "#/definitions/LoginResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
   /user/signup:
     post:
@@ -45,17 +45,17 @@ paths:
           description: Signup Payload
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: "#/definitions/User"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: Signup Successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
   /user/profile:
     post:
@@ -73,13 +73,13 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
     put:
       security:
@@ -98,23 +98,229 @@ paths:
           description: Update user profile attributes
           required: true
           schema:
-            $ref: '#/definitions/UserProfile'
+            $ref: "#/definitions/UserProfile"
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: User profile retrieved successully
           schema:
-            $ref: '#/definitions/ApiResponse'
-        '400':
+            $ref: "#/definitions/ApiResponse"
+        "400":
           description: Invalid Fields
-        '500':
+        "500":
           description: Internal Server Error
+
+  # ============================================================================
+  # TRANSACTIONS MODULE ENDPOINTS
+  # ============================================================================
+
+  /accounts/{accountId}/transactions:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Get transactions for an account
+      description: |
+        Retrieve all transactions for a specific account.
+        Can be filtered by month and year.
+        Transactions are grouped by account.
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          type: string
+          description: ID of the account (e.g., "checking-x8349")
+        - in: query
+          name: month
+          required: false
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: Filter by month (1-12)
+        - in: query
+          name: year
+          required: false
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          description: Filter by year (e.g., 2024)
+        - in: query
+          name: limit
+          required: false
+          type: integer
+          default: 50
+          description: Number of transactions to return
+        - in: query
+          name: offset
+          required: false
+          type: integer
+          default: 0
+          description: Pagination offset
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transactions retrieved successfully
+          schema:
+            $ref: "#/definitions/TransactionListResponse"
+        "400":
+          description: Invalid parameters
+        "401":
+          description: Unauthorized - Invalid or missing token
+        "404":
+          description: Account not found
+        "500":
+          description: Internal Server Error
+
+  /transactions/{id}:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Get transaction details
+      description: Retrieve detailed information about a specific transaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Transaction ID
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transaction details retrieved successfully
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: Invalid transaction ID
+        "401":
+          description: Unauthorized
+        "404":
+          description: Transaction not found
+        "500":
+          description: Internal Server Error
+
+    put:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Update a transaction
+      description: Update an existing transaction's details (category, notes, etc.)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Transaction ID
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated transaction data
+          required: true
+          schema:
+            $ref: "#/definitions/TransactionUpdateRequest"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transaction updated successfully
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: Invalid update data
+        "401":
+          description: Unauthorized
+        "404":
+          description: Transaction not found
+        "500":
+          description: Internal Server Error
+
+    delete:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Delete a transaction
+      description: Remove a transaction from the system
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+          description: Transaction ID
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Transaction deleted successfully
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Transaction not found
+        "500":
+          description: Internal Server Error
+
+  /transactions:
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions Module
+      summary: Create a new transaction
+      description: Add a new transaction to an account
+      parameters:
+        - in: header
+          name: Authorization
+          description: Attach Bearer JWT token
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Transaction data
+          required: true
+          schema:
+            $ref: "#/definitions/TransactionCreateRequest"
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Transaction created successfully
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        "400":
+          description: Invalid transaction data
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+
 securityDefinitions:
   Bearer:
     type: apiKey
     name: Authorization
     in: header
+
 definitions:
   User:
     properties:
@@ -130,6 +336,7 @@ definitions:
       lastName:
         type: string
         description: user last name
+
   Login:
     properties:
       email:
@@ -138,6 +345,7 @@ definitions:
       password:
         type: string
         description: user password
+
   ApiResponse:
     type: object
     properties:
@@ -152,11 +360,13 @@ definitions:
             type: string
           email:
             type: string
+
   LoginResponse:
     type: object
     properties:
       token:
         type: string
+
   UserProfile:
     type: object
     properties:
@@ -164,3 +374,120 @@ definitions:
         type: string
       lastName:
         type: string
+
+  # ============================================================================
+  # TRANSACTIONS MODULE DEFINITIONS
+  # ============================================================================
+
+  Transaction:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
+      accountId:
+        type: string
+        example: "checking-x8349"
+      type:
+        type: string
+        enum: [electronic, cash, transfer, debit, credit]
+        example: "electronic"
+      category:
+        type: string
+        example: "Food"
+      amount:
+        type: number
+        format: float
+        example: -5.00
+      description:
+        type: string
+        example: "Golden Sun Bakery"
+      date:
+        type: string
+        format: date-time
+        example: "2024-06-20T10:30:00Z"
+      balance:
+        type: number
+        format: float
+        example: 2082.79
+      notes:
+        type: string
+        example: "Morning coffee"
+      merchant:
+        type: string
+        example: "Golden Sun Bakery"
+      createdAt:
+        type: string
+        format: date-time
+        example: "2024-06-20T10:30:00Z"
+      updatedAt:
+        type: string
+        format: date-time
+        example: "2024-06-20T10:30:00Z"
+
+  TransactionListResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+        example: 0
+      message:
+        type: string
+        example: "Transactions retrieved successfully"
+      body:
+        type: array
+        items:
+          $ref: "#/definitions/Transaction"
+
+  TransactionCreateRequest:
+    type: object
+    required:
+      - accountId
+      - amount
+      - description
+    properties:
+      accountId:
+        type: string
+        example: "checking-x8349"
+      type:
+        type: string
+        enum: [electronic, cash, transfer, debit, credit]
+        example: "electronic"
+      category:
+        type: string
+        example: "Food"
+      amount:
+        type: number
+        format: float
+        example: -5.00
+      description:
+        type: string
+        example: "Golden Sun Bakery"
+      date:
+        type: string
+        format: date-time
+        example: "2024-06-20T10:30:00Z"
+      notes:
+        type: string
+        example: "Morning coffee"
+      merchant:
+        type: string
+        example: "Golden Sun Bakery"
+
+  TransactionUpdateRequest:
+    type: object
+    properties:
+      category:
+        type: string
+        example: "Food"
+      description:
+        type: string
+        example: "Updated description"
+      notes:
+        type: string
+        example: "Updated notes"
+      type:
+        type: string
+        enum: [electronic, cash, transfer]
+        example: "electronic"
